@@ -206,3 +206,7 @@ button:focus-visible {
   margin-bottom: 20px;
   text-transform: uppercase;
 }
+
+img {
+  width: 50px;
+}
