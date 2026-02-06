@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { socket } from '../socket';
+import logo from '../assets/logo.png';
 
 interface RoomEntryProps {
     onJoined: (roomCode: string, isCreator: boolean, isStarted: boolean) => void;
@@ -42,7 +43,7 @@ export default function RoomEntry({ onJoined }: RoomEntryProps) {
 
     return (
         <div className="room-entry-container">
-            <h1 className="star-wars-title">STAR WARS TUG WARS</h1>
+            <img src={logo} alt="Star Wars Tug Wars" className="logo" />
 
             <div className="entry-card">
                 <button className="primary-btn" onClick={handleCreate}>

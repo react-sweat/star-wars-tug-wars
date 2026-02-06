@@ -53,14 +53,6 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-.star-wars-title {
-  font-size: 3em;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-  letter-spacing: 4px;
-  text-shadow: 0 0 10px #ffe81f;
-}
-
 .team-container {
   display: flex;
   justify-content: center;
@@ -208,5 +200,10 @@ button:focus-visible {
 }
 
 img {
-  width: 50px;
+  width: 70px;
+}
+
+.logo {
+  width: 600px;
+  margin-bottom: 40px;
 }
