@@ -3,7 +3,7 @@ import { socket } from '../socket';
 import logo from '../assets/logo.png';
 
 interface RoomEntryProps {
-    onJoined: (roomCode: string, isCreator: boolean, isStarted: boolean) => void;
+    onJoined: (roomCode: string, isCreator: boolean, isStarted: boolean, config?: any) => void;
 }
 
 export default function RoomEntry({ onJoined }: RoomEntryProps) {
@@ -11,12 +11,12 @@ export default function RoomEntry({ onJoined }: RoomEntryProps) {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        socket.on('room_created', ({ roomCode, isCreator, isStarted }) => {
-            onJoined(roomCode, isCreator, isStarted || false);
+        socket.on('room_created', ({ roomCode, isCreator, isStarted, config }) => {
+            onJoined(roomCode, isCreator, isStarted || false, config);
         });
 
-        socket.on('room_joined', ({ roomCode, isCreator, isStarted }) => {
-            onJoined(roomCode, isCreator, isStarted || false);
+        socket.on('room_joined', ({ roomCode, isCreator, isStarted, config }) => {
+            onJoined(roomCode, isCreator, isStarted || false, config);
         });
 
         socket.on('error', ({ message }) => {

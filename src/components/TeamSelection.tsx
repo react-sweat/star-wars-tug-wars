@@ -5,39 +5,26 @@ import { CHARACTERS } from '../characters';
 interface TeamSelectionProps {
     roomCode: string;
     isCreator: boolean;
+    initialCharacters: { red: string; blue: string };
+    initialPlayerCounts: { red: number; blue: number };
     onSelectTeam: (team: 'red' | 'blue' | null, charIds: { red: string; blue: string }) => void;
 }
 
-export default function TeamSelection({ roomCode, isCreator, onSelectTeam }: TeamSelectionProps) {
-    const [config, setConfig] = useState({
-        characters: { red: 'darth_vader', blue: 'luke_skywalker' },
-        playerCounts: { red: 0, blue: 0 }
-    });
+export default function TeamSelection({ roomCode, isCreator, initialCharacters, initialPlayerCounts, onSelectTeam }: TeamSelectionProps) {
     const [selectedTeam, setSelectedTeam] = useState<'red' | 'blue' | null>(null);
 
     useEffect(() => {
-        socket.on('room_update', (newConfig) => {
-            setConfig(newConfig);
-        });
-
         socket.on('team_joined', (response) => {
             if (response.success) {
                 setSelectedTeam(response.team);
-                onSelectTeam(response.team, config.characters);
+                onSelectTeam(response.team, initialCharacters);
             }
         });
 
-        // Get initial config if joining
-        socket.on('room_joined', ({ config: initialConfig }) => {
-            if (initialConfig) setConfig(initialConfig);
-        });
-
         return () => {
-            socket.off('room_update');
             socket.off('team_joined');
-            socket.off('room_joined');
         };
-    }, [onSelectTeam, config.characters]);
+    }, [onSelectTeam, initialCharacters]);
 
     const handleJoin = (team: 'red' | 'blue') => {
         socket.emit('join_team', { roomCode, team });
@@ -49,7 +36,7 @@ export default function TeamSelection({ roomCode, isCreator, onSelectTeam }: Tea
 
     const handleCharChange = (team: 'red' | 'blue', charId: string) => {
         if (!isCreator) return;
-        const newChars = { ...config.characters, [team]: charId };
+        const newChars = { ...initialCharacters, [team]: charId };
         socket.emit('update_config', { roomCode, characters: newChars });
     };
 
@@ -68,16 +55,16 @@ export default function TeamSelection({ roomCode, isCreator, onSelectTeam }: Tea
                         {isCreator ? (
                             <select
                                 className="char-select"
-                                value={config.characters.blue}
+                                value={initialCharacters.blue}
                                 onChange={(e) => handleCharChange('blue', e.target.value)}
                             >
                                 {lightChars.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
                         ) : (
-                            <h3 className="char-name-display">{CHARACTERS.find(c => c.id === config.characters.blue)?.name}</h3>
+                            <h3 className="char-name-display">{CHARACTERS.find(c => c.id === initialCharacters.blue)?.name}</h3>
                         )}
                         <img
-                            src={CHARACTERS.find(c => c.id === config.characters.blue)?.image}
+                            src={CHARACTERS.find(c => c.id === initialCharacters.blue)?.image}
                             alt="Jedi"
                             className={`selection-img ${selectedTeam === 'blue' ? 'selected-team' : ''}`}
                         />
@@ -86,7 +73,7 @@ export default function TeamSelection({ roomCode, isCreator, onSelectTeam }: Tea
                         className={`join-btn btn-blue ${selectedTeam === 'blue' ? 'active' : ''}`}
                         onClick={() => handleJoin('blue')}
                     >
-                        {selectedTeam === 'blue' ? 'JOINED BLUE SIDE' : `JOIN LIGHT SIDE (${config.playerCounts.blue})`}
+                        {selectedTeam === 'blue' ? 'JOINED BLUE SIDE' : `JOIN LIGHT SIDE (${initialPlayerCounts.blue})`}
                     </button>
                 </div>
 
@@ -98,16 +85,16 @@ export default function TeamSelection({ roomCode, isCreator, onSelectTeam }: Tea
                         {isCreator ? (
                             <select
                                 className="char-select"
-                                value={config.characters.red}
+                                value={initialCharacters.red}
                                 onChange={(e) => handleCharChange('red', e.target.value)}
                             >
                                 {darkChars.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
                         ) : (
-                            <h3 className="char-name-display">{CHARACTERS.find(c => c.id === config.characters.red)?.name}</h3>
+                            <h3 className="char-name-display">{CHARACTERS.find(c => c.id === initialCharacters.red)?.name}</h3>
                         )}
                         <img
-                            src={CHARACTERS.find(c => c.id === config.characters.red)?.image}
+                            src={CHARACTERS.find(c => c.id === initialCharacters.red)?.image}
                             alt="Sith"
                             className={`selection-img ${selectedTeam === 'red' ? 'selected-team' : ''}`}
                         />
@@ -116,7 +103,7 @@ export default function TeamSelection({ roomCode, isCreator, onSelectTeam }: Tea
                         className={`join-btn btn-red ${selectedTeam === 'red' ? 'active' : ''}`}
                         onClick={() => handleJoin('red')}
                     >
-                        {selectedTeam === 'red' ? 'JOINED RED SIDE' : `JOIN DARK SIDE (${config.playerCounts.red})`}
+                        {selectedTeam === 'red' ? 'JOINED RED SIDE' : `JOIN DARK SIDE (${initialPlayerCounts.red})`}
                     </button>
                 </div>
             </div>

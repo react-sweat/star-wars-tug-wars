@@ -42,7 +42,16 @@ io.on('connection', (socket) => {
             characters: { red: 'darth_vader', blue: 'luke_skywalker' }
         };
         socket.join(roomCode);
-        socket.emit('room_created', { roomCode, isCreator: true });
+        socket.emit('room_created', {
+            roomCode,
+            isCreator: true,
+            isStarted: false,
+            config: {
+                characters: rooms[roomCode].characters,
+                score: rooms[roomCode].score,
+                playerCounts: { red: 0, blue: 0 }
+            }
+        });
         io.to(roomCode).emit('player_list_update', rooms[roomCode].players);
         console.log(`Room created: ${roomCode} by ${socket.id}`);
     });

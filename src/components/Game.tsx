@@ -6,12 +6,12 @@ interface GameProps {
     roomCode: string;
     playerTeam: 'red' | 'blue';
     characterIds: { red: string; blue: string };
+    initialPlayerCounts: { red: number; blue: number };
     onRestart: () => void;
 }
 
-export default function Game({ roomCode, playerTeam, characterIds, onRestart }: GameProps) {
+export default function Game({ roomCode, playerTeam, characterIds, initialPlayerCounts, onRestart }: GameProps) {
     const [score, setScore] = useState(0);
-    const [playerCounts, setPlayerCounts] = useState({ red: 0, blue: 0 });
     const [winner, setWinner] = useState<'red' | 'blue' | null>(null);
     const [cooldown, setCooldown] = useState(false);
 
@@ -20,13 +20,8 @@ export default function Game({ roomCode, playerTeam, characterIds, onRestart }: 
             setScore(newScore);
         });
 
-        socket.on('room_update', (config) => {
-            setPlayerCounts(config.playerCounts);
-        });
-
         return () => {
             socket.off('update_score');
-            socket.off('room_update');
         };
     }, []);
 
@@ -73,7 +68,7 @@ export default function Game({ roomCode, playerTeam, characterIds, onRestart }: 
             <div className="battlefield compact">
                 <div className="team-stats blue-stats">
                     <div className="char-name">{blueChar?.name}</div>
-                    <div className="player-count">Participants: {playerCounts.blue}</div>
+                    <div className="player-count">Participants: {initialPlayerCounts.blue}</div>
                     <img src={blueChar?.image} alt="Jedi" className={`game-char-img ${score <= 0 && score > -100 ? 'pulling' : ''}`} />
                 </div>
 
@@ -91,7 +86,7 @@ export default function Game({ roomCode, playerTeam, characterIds, onRestart }: 
 
                 <div className="team-stats red-stats">
                     <div className="char-name">{redChar?.name}</div>
-                    <div className="player-count">Participants: {playerCounts.red}</div>
+                    <div className="player-count">Participants: {initialPlayerCounts.red}</div>
                     <img src={redChar?.image} alt="Sith" className={`game-char-img ${score >= 0 && score < 100 ? 'pulling' : ''}`} />
                 </div>
             </div>
