@@ -13,6 +13,7 @@ export default function TeamSelection({ roomCode, isCreator, onSelectTeam }: Tea
         characters: { red: 'darth_vader', blue: 'luke_skywalker' },
         playerCounts: { red: 0, blue: 0 }
     });
+    const [selectedTeam, setSelectedTeam] = useState<'red' | 'blue' | null>(null);
 
     useEffect(() => {
         socket.on('room_update', (newConfig) => {
@@ -21,6 +22,7 @@ export default function TeamSelection({ roomCode, isCreator, onSelectTeam }: Tea
 
         socket.on('team_joined', (response) => {
             if (response.success) {
+                setSelectedTeam(response.team);
                 onSelectTeam(response.team, config.characters);
             }
         });
@@ -39,6 +41,10 @@ export default function TeamSelection({ roomCode, isCreator, onSelectTeam }: Tea
 
     const handleJoin = (team: 'red' | 'blue') => {
         socket.emit('join_team', { roomCode, team });
+    };
+
+    const handleStartGame = () => {
+        socket.emit('start_game', roomCode);
     };
 
     const handleCharChange = (team: 'red' | 'blue', charId: string) => {
@@ -61,50 +67,74 @@ export default function TeamSelection({ roomCode, isCreator, onSelectTeam }: Tea
                     <div className="character-picker">
                         {isCreator ? (
                             <select
+                                className="char-select"
                                 value={config.characters.blue}
                                 onChange={(e) => handleCharChange('blue', e.target.value)}
                             >
                                 {lightChars.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
                         ) : (
-                            <h3>{CHARACTERS.find(c => c.id === config.characters.blue)?.name}</h3>
+                            <h3 className="char-name-display">{CHARACTERS.find(c => c.id === config.characters.blue)?.name}</h3>
                         )}
                         <img
                             src={CHARACTERS.find(c => c.id === config.characters.blue)?.image}
                             alt="Jedi"
-                            className="selection-img"
+                            className={`selection-img ${selectedTeam === 'blue' ? 'selected-team' : ''}`}
                         />
                     </div>
-                    <button className="join-btn btn-blue" onClick={() => handleJoin('blue')}>
-                        JOIN LIGHT SIDE ({config.playerCounts.blue})
+                    <button
+                        className={`join-btn btn-blue ${selectedTeam === 'blue' ? 'active' : ''}`}
+                        onClick={() => handleJoin('blue')}
+                    >
+                        {selectedTeam === 'blue' ? 'JOINED BLUE SIDE' : `JOIN LIGHT SIDE (${config.playerCounts.blue})`}
                     </button>
                 </div>
 
-                <div className="divider">VS</div>
+                <div className="vs-divider">VS</div>
 
                 {/* RED SIDE */}
                 <div className="team-column">
                     <div className="character-picker">
                         {isCreator ? (
                             <select
+                                className="char-select"
                                 value={config.characters.red}
                                 onChange={(e) => handleCharChange('red', e.target.value)}
                             >
                                 {darkChars.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
                         ) : (
-                            <h3>{CHARACTERS.find(c => c.id === config.characters.red)?.name}</h3>
+                            <h3 className="char-name-display">{CHARACTERS.find(c => c.id === config.characters.red)?.name}</h3>
                         )}
                         <img
                             src={CHARACTERS.find(c => c.id === config.characters.red)?.image}
                             alt="Sith"
-                            className="selection-img"
+                            className={`selection-img ${selectedTeam === 'red' ? 'selected-team' : ''}`}
                         />
                     </div>
-                    <button className="join-btn btn-red" onClick={() => handleJoin('red')}>
-                        JOIN DARK SIDE ({config.playerCounts.red})
+                    <button
+                        className={`join-btn btn-red ${selectedTeam === 'red' ? 'active' : ''}`}
+                        onClick={() => handleJoin('red')}
+                    >
+                        {selectedTeam === 'red' ? 'JOINED RED SIDE' : `JOIN DARK SIDE (${config.playerCounts.red})`}
                     </button>
                 </div>
+            </div>
+
+            <div className="lobby-controls">
+                {isCreator ? (
+                    <button
+                        className="start-game-btn"
+                        onClick={handleStartGame}
+                        disabled={!selectedTeam}
+                    >
+                        START GAME
+                    </button>
+                ) : (
+                    <div className="waiting-msg">
+                        {selectedTeam ? "WAITING FOR CREATOR TO START..." : "SELECT A SIDE TO CONTINUE"}
+                    </div>
+                )}
             </div>
         </div>
     );

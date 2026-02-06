@@ -72,13 +72,13 @@ export default function Game({ roomCode, playerTeam, characterIds, onRestart }: 
 
             <div className="battlefield compact">
                 <div className="team-stats blue-stats">
-                    <img src={blueChar?.image} alt="Jedi" className={`game-char-img ${score <= 0 && score > -100 ? 'pulling' : ''}`} />
                     <div className="char-name">{blueChar?.name}</div>
-                    <div className="player-count">Ps: {playerCounts.blue}</div>
+                    <div className="player-count">Participants: {playerCounts.blue}</div>
+                    <img src={blueChar?.image} alt="Jedi" className={`game-char-img ${score <= 0 && score > -100 ? 'pulling' : ''}`} />
                 </div>
 
                 <div className="tug-area">
-                    <div className="score-board">Score: {score}</div>
+                    <div className="score-board">SCORING: {score}</div>
                     <div className="progress-container">
                         <div className="center-marker"></div>
                         <div
@@ -90,9 +90,9 @@ export default function Game({ roomCode, playerTeam, characterIds, onRestart }: 
                 </div>
 
                 <div className="team-stats red-stats">
-                    <img src={redChar?.image} alt="Sith" className={`game-char-img ${score >= 0 && score < 100 ? 'pulling' : ''}`} />
                     <div className="char-name">{redChar?.name}</div>
-                    <div className="player-count">Ps: {playerCounts.red}</div>
+                    <div className="player-count">Participants: {playerCounts.red}</div>
+                    <img src={redChar?.image} alt="Sith" className={`game-char-img ${score >= 0 && score < 100 ? 'pulling' : ''}`} />
                 </div>
             </div>
 
