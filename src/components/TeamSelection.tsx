@@ -1,57 +1,109 @@
 import { useState, useEffect } from 'react';
 import { socket } from '../socket';
+import { CHARACTERS } from '../characters';
 
 interface TeamSelectionProps {
-    onSelectTeam: (team: 'red' | 'blue' | null, character: string) => void;
+    roomCode: string;
+    isCreator: boolean;
+    onSelectTeam: (team: 'red' | 'blue' | null, charIds: { red: string; blue: string }) => void;
 }
 
-export default function TeamSelection({ onSelectTeam }: TeamSelectionProps) {
-    const [takenTeams, setTakenTeams] = useState<{ red: string | null, blue: string | null }>({ red: null, blue: null });
+export default function TeamSelection({ roomCode, isCreator, onSelectTeam }: TeamSelectionProps) {
+    const [config, setConfig] = useState({
+        characters: { red: 'darth_vader', blue: 'luke_skywalker' },
+        playerCounts: { red: 0, blue: 0 }
+    });
 
     useEffect(() => {
-        socket.on('team_update', (teams) => {
-            setTakenTeams(teams);
+        socket.on('room_update', (newConfig) => {
+            setConfig(newConfig);
         });
 
         socket.on('team_joined', (response) => {
             if (response.success) {
-                onSelectTeam(response.team, response.team === 'red' ? 'Sith Lord' : 'Jedi Knight');
+                onSelectTeam(response.team, config.characters);
             }
         });
 
+        // Get initial config if joining
+        socket.on('room_joined', ({ config: initialConfig }) => {
+            if (initialConfig) setConfig(initialConfig);
+        });
+
         return () => {
-            socket.off('team_update');
+            socket.off('room_update');
             socket.off('team_joined');
+            socket.off('room_joined');
         };
-    }, [onSelectTeam]);
+    }, [onSelectTeam, config.characters]);
 
     const handleJoin = (team: 'red' | 'blue') => {
-        if (!takenTeams[team]) {
-            socket.emit('join_team', team);
-        }
+        socket.emit('join_team', { roomCode, team });
     };
 
-    return (
-        <div>
-            <h1 className="star-wars-title">Choose Your Side</h1>
+    const handleCharChange = (team: 'red' | 'blue', charId: string) => {
+        if (!isCreator) return;
+        const newChars = { ...config.characters, [team]: charId };
+        socket.emit('update_config', { roomCode, characters: newChars });
+    };
 
-            <div className="team-container">
-                <div
-                    className={`team-card team-blue ${takenTeams.blue ? 'disabled' : ''}`}
-                    onClick={() => handleJoin('blue')}
-                    style={{ opacity: takenTeams.blue ? 0.5 : 1, cursor: takenTeams.blue ? 'not-allowed' : 'pointer' }}
-                >
-                    <h2>The Light Side</h2>
-                    <p>{takenTeams.blue ? '(Taken)' : 'Peace & Justice'}</p>
+    const darkChars = CHARACTERS.filter(c => c.side === 'dark');
+    const lightChars = CHARACTERS.filter(c => c.side === 'light');
+
+    return (
+        <div className="selection-container">
+            <h1 className="star-wars-title">ROOM: {roomCode}</h1>
+            <p className="subtitle">Choose Your Side</p>
+
+            <div className="team-selection">
+                {/* BLUE SIDE */}
+                <div className="team-column">
+                    <div className="character-picker">
+                        {isCreator ? (
+                            <select
+                                value={config.characters.blue}
+                                onChange={(e) => handleCharChange('blue', e.target.value)}
+                            >
+                                {lightChars.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                        ) : (
+                            <h3>{CHARACTERS.find(c => c.id === config.characters.blue)?.name}</h3>
+                        )}
+                        <img
+                            src={CHARACTERS.find(c => c.id === config.characters.blue)?.image}
+                            alt="Jedi"
+                            className="selection-img"
+                        />
+                    </div>
+                    <button className="join-btn btn-blue" onClick={() => handleJoin('blue')}>
+                        JOIN LIGHT SIDE ({config.playerCounts.blue})
+                    </button>
                 </div>
 
-                <div
-                    className={`team-card team-red ${takenTeams.red ? 'disabled' : ''}`}
-                    onClick={() => handleJoin('red')}
-                    style={{ opacity: takenTeams.red ? 0.5 : 1, cursor: takenTeams.red ? 'not-allowed' : 'pointer' }}
-                >
-                    <h2>The Dark Side</h2>
-                    <p>{takenTeams.red ? '(Taken)' : 'Power & Passion'}</p>
+                <div className="divider">VS</div>
+
+                {/* RED SIDE */}
+                <div className="team-column">
+                    <div className="character-picker">
+                        {isCreator ? (
+                            <select
+                                value={config.characters.red}
+                                onChange={(e) => handleCharChange('red', e.target.value)}
+                            >
+                                {darkChars.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                        ) : (
+                            <h3>{CHARACTERS.find(c => c.id === config.characters.red)?.name}</h3>
+                        )}
+                        <img
+                            src={CHARACTERS.find(c => c.id === config.characters.red)?.image}
+                            alt="Sith"
+                            className="selection-img"
+                        />
+                    </div>
+                    <button className="join-btn btn-red" onClick={() => handleJoin('red')}>
+                        JOIN DARK SIDE ({config.playerCounts.red})
+                    </button>
                 </div>
             </div>
         </div>

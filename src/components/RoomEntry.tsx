@@ -1,0 +1,69 @@
+import { useState, useEffect } from 'react';
+import { socket } from '../socket';
+
+interface RoomEntryProps {
+    onJoined: (roomCode: string, isCreator: boolean, isStarted: boolean) => void;
+}
+
+export default function RoomEntry({ onJoined }: RoomEntryProps) {
+    const [code, setCode] = useState('');
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        socket.on('room_created', ({ roomCode, isCreator, isStarted }) => {
+            onJoined(roomCode, isCreator, isStarted || false);
+        });
+
+        socket.on('room_joined', ({ roomCode, isCreator, isStarted }) => {
+            onJoined(roomCode, isCreator, isStarted || false);
+        });
+
+        socket.on('error', ({ message }) => {
+            setError(message);
+        });
+
+        return () => {
+            socket.off('room_created');
+            socket.off('room_joined');
+            socket.off('error');
+        };
+    }, [onJoined]);
+
+    const handleCreate = () => {
+        socket.emit('create_room');
+    };
+
+    const handleJoin = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (code.trim()) {
+            socket.emit('join_room', code.toUpperCase());
+        }
+    };
+
+    return (
+        <div className="room-entry-container">
+            <h1 className="star-wars-title">STAR WARS TUG WARS</h1>
+
+            <div className="entry-card">
+                <button className="primary-btn" onClick={handleCreate}>
+                    CREATE PARTY
+                </button>
+
+                <div className="divider">OR</div>
+
+                <form onSubmit={handleJoin} className="join-form">
+                    <input
+                        type="text"
+                        placeholder="ENTER ROOM CODE"
+                        value={code}
+                        onChange={(e) => setCode(e.target.value.toUpperCase())}
+                        maxLength={6}
+                    />
+                    <button type="submit" className="secondary-btn">JOIN PARTY</button>
+                </form>
+
+                {error && <p className="error-message">{error}</p>}
+            </div>
+        </div>
+    );
+}

@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { socket } from '../socket';
+import { CHARACTERS } from '../characters';
 
 interface GameProps {
+    roomCode: string;
     playerTeam: 'red' | 'blue';
-    character: string;
+    characterIds: { red: string; blue: string };
     onRestart: () => void;
 }
 
-export default function Game({ playerTeam, onRestart }: GameProps) {
+export default function Game({ roomCode, playerTeam, characterIds, onRestart }: GameProps) {
     const [score, setScore] = useState(0);
+    const [playerCounts, setPlayerCounts] = useState({ red: 0, blue: 0 });
     const [winner, setWinner] = useState<'red' | 'blue' | null>(null);
     const [cooldown, setCooldown] = useState(false);
 
@@ -17,8 +20,13 @@ export default function Game({ playerTeam, onRestart }: GameProps) {
             setScore(newScore);
         });
 
+        socket.on('room_update', (config) => {
+            setPlayerCounts(config.playerCounts);
+        });
+
         return () => {
             socket.off('update_score');
+            socket.off('room_update');
         };
     }, []);
 
@@ -30,14 +38,14 @@ export default function Game({ playerTeam, onRestart }: GameProps) {
     const handlePull = () => {
         if (winner || cooldown) return;
 
-        socket.emit('pull', playerTeam);
+        socket.emit('pull', { roomCode, team: playerTeam });
 
         setCooldown(true);
         setTimeout(() => setCooldown(false), 500);
     };
 
     const handleRestartGame = () => {
-        socket.emit('reset');
+        socket.emit('reset', roomCode);
         onRestart();
     };
 
@@ -45,29 +53,46 @@ export default function Game({ playerTeam, onRestart }: GameProps) {
         return ((score + 100) / 200) * 100;
     };
 
+    const redChar = CHARACTERS.find(c => c.id === characterIds.red);
+    const blueChar = CHARACTERS.find(c => c.id === characterIds.blue);
+
     return (
         <div className="game-container">
-            <h1 className="star-wars-title">TUG OF WAR</h1>
+            <h1 className="star-wars-title smaller">TUG OF WAR</h1>
+            <h2 className="room-display">ROOM: {roomCode}</h2>
 
             {winner && (
                 <div className="winner-overlay">
                     <div className="winner-text" style={{ color: winner === 'red' ? '#ff3333' : '#3333ff' }}>
                         {winner === 'red' ? 'THE DARK SIDE' : 'THE LIGHT SIDE'} WINS
                     </div>
-                    <button onClick={handleRestartGame}>PLAY AGAIN</button>
+                    <button onClick={handleRestartGame}>BACK TO LOBBY</button>
                 </div>
             )}
 
-            <div className="score-board">
-                Score: {score}
-            </div>
+            <div className="battlefield compact">
+                <div className="team-stats blue-stats">
+                    <img src={blueChar?.image} alt="Jedi" className={`game-char-img ${score <= 0 && score > -100 ? 'pulling' : ''}`} />
+                    <div className="char-name">{blueChar?.name}</div>
+                    <div className="player-count">Ps: {playerCounts.blue}</div>
+                </div>
 
-            <div className="progress-container">
-                <div className="center-marker"></div>
-                <div
-                    className={`progress-bar ${score > 0 ? 'progress-red' : 'progress-blue'}`}
-                    style={{ width: `${calculateProgress()}%` }}
-                >
+                <div className="tug-area">
+                    <div className="score-board">Score: {score}</div>
+                    <div className="progress-container">
+                        <div className="center-marker"></div>
+                        <div
+                            className={`progress-bar ${score > 0 ? 'progress-red' : 'progress-blue'}`}
+                            style={{ width: `${calculateProgress()}%` }}
+                        >
+                        </div>
+                    </div>
+                </div>
+
+                <div className="team-stats red-stats">
+                    <img src={redChar?.image} alt="Sith" className={`game-char-img ${score >= 0 && score < 100 ? 'pulling' : ''}`} />
+                    <div className="char-name">{redChar?.name}</div>
+                    <div className="player-count">Ps: {playerCounts.red}</div>
                 </div>
             </div>
 
@@ -83,7 +108,7 @@ export default function Game({ playerTeam, onRestart }: GameProps) {
             </div>
 
             <p style={{ marginTop: '20px', opacity: 0.7 }}>
-                You are playing as {playerTeam === 'red' ? 'The Dark Side' : 'The Light Side'}
+                You are playing for {playerTeam === 'red' ? 'The Dark Side' : 'The Light Side'}
             </p>
         </div>
     );

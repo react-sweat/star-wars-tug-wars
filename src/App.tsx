@@ -1,37 +1,54 @@
 import { useState } from 'react';
 import './index.css';
+import RoomEntry from './components/RoomEntry';
 import TeamSelection from './components/TeamSelection';
 import Game from './components/Game';
 
 function App() {
+  const [roomCode, setRoomCode] = useState('');
+  const [isCreator, setIsCreator] = useState(false);
   const [gameState, setGameState] = useState<{
     team: 'red' | 'blue' | null;
-    character: string;
+    characterIds: { red: string; blue: string };
   }>({
     team: null,
-    character: '',
+    characterIds: { red: 'darth_vader', blue: 'luke_skywalker' },
   });
 
-  const handleSelectTeam = (team: 'red' | 'blue' | null, character: string) => {
-    setGameState({ team, character });
+  const handleJoinedRoom = (code: string, creator: boolean) => {
+    setRoomCode(code);
+    setIsCreator(creator);
+  };
+
+  const handleSelectTeam = (team: 'red' | 'blue' | null, charIds: { red: string; blue: string }) => {
+    setGameState({ team, characterIds: charIds });
   };
 
   const handleRestart = () => {
-    setGameState({ team: null, character: '' });
+    setRoomCode('');
+    setIsCreator(false);
+    setGameState({ team: null, characterIds: { red: 'darth_vader', blue: 'luke_skywalker' } });
   };
 
   return (
-    <>
-      {!gameState.team ? (
-        <TeamSelection onSelectTeam={handleSelectTeam} />
+    <div className="app">
+      {!roomCode ? (
+        <RoomEntry onJoined={handleJoinedRoom} />
+      ) : !gameState.team ? (
+        <TeamSelection
+          roomCode={roomCode}
+          isCreator={isCreator}
+          onSelectTeam={handleSelectTeam}
+        />
       ) : (
         <Game
+          roomCode={roomCode}
           playerTeam={gameState.team}
-          character={gameState.character}
+          characterIds={gameState.characterIds}
           onRestart={handleRestart}
         />
       )}
-    </>
+    </div>
   );
 }
 
