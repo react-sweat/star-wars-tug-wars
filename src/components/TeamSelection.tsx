@@ -73,7 +73,7 @@ export default function TeamSelection({ roomCode, isCreator, initialCharacters, 
                         className={`join-btn btn-blue ${selectedTeam === 'blue' ? 'active' : ''}`}
                         onClick={() => handleJoin('blue')}
                     >
-                        {selectedTeam === 'blue' ? 'JOINED BLUE SIDE' : `JOIN LIGHT SIDE (${initialPlayerCounts.blue})`}
+                        {selectedTeam === 'blue' ? 'JOINED LIGHT SIDE' : `JOIN LIGHT SIDE (${initialPlayerCounts.blue})`}
                     </button>
                 </div>
 
@@ -103,7 +103,7 @@ export default function TeamSelection({ roomCode, isCreator, initialCharacters, 
                         className={`join-btn btn-red ${selectedTeam === 'red' ? 'active' : ''}`}
                         onClick={() => handleJoin('red')}
                     >
-                        {selectedTeam === 'red' ? 'JOINED RED SIDE' : `JOIN DARK SIDE (${initialPlayerCounts.red})`}
+                        {selectedTeam === 'red' ? 'JOINED DARK SIDE' : `JOIN DARK SIDE (${initialPlayerCounts.red})`}
                     </button>
                 </div>
             </div>

@@ -8,12 +8,22 @@ interface GameProps {
     characterIds: { red: string; blue: string };
     initialPlayerCounts: { red: number; blue: number };
     onRestart: () => void;
+    showCountdown?: boolean;
 }
 
-export default function Game({ roomCode, playerTeam, characterIds, initialPlayerCounts, onRestart }: GameProps) {
+export default function Game({ roomCode, playerTeam, characterIds, initialPlayerCounts, onRestart, showCountdown = false }: GameProps) {
     const [score, setScore] = useState(0);
     const [winner, setWinner] = useState<'red' | 'blue' | null>(null);
     const [cooldown, setCooldown] = useState(false);
+    const [count, setCount] = useState<number | null>(showCountdown ? 3 : null);
+
+    useEffect(() => {
+        if (count === null) return;
+        if (count > 0) {
+            const timer = setTimeout(() => setCount(count - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [count]);
 
     useEffect(() => {
         socket.on('update_score', (newScore: number) => {
@@ -31,12 +41,12 @@ export default function Game({ roomCode, playerTeam, characterIds, initialPlayer
     }, [score]);
 
     const handlePull = () => {
-        if (winner || cooldown) return;
+        if (winner || cooldown || count !== 0 && count !== null) return;
 
         socket.emit('pull', { roomCode, team: playerTeam });
 
         setCooldown(true);
-        setTimeout(() => setCooldown(false), 500);
+        setTimeout(() => setCooldown(false), 150);
     };
 
     const handleRestartGame = () => {
@@ -62,6 +72,14 @@ export default function Game({ roomCode, playerTeam, characterIds, initialPlayer
                         {winner === 'red' ? 'THE DARK SIDE' : 'THE LIGHT SIDE'} WINS
                     </div>
                     <button onClick={handleRestartGame}>BACK TO LOBBY</button>
+                </div>
+            )}
+
+            {count !== null && count > 0 && (
+                <div className="winner-overlay" style={{ background: 'rgba(0,0,0,0.8)' }}>
+                    <div className="winner-text" style={{ fontSize: '8em', animation: 'pulse 0.5s infinite alternate' }}>
+                        {count}
+                    </div>
                 </div>
             )}
 
@@ -95,7 +113,7 @@ export default function Game({ roomCode, playerTeam, characterIds, initialPlayer
                 <button
                     className={`pull-btn ${playerTeam === 'red' ? 'btn-red' : 'btn-blue'}`}
                     onClick={handlePull}
-                    disabled={cooldown || !!winner}
+                    disabled={cooldown || !!winner || (count !== null && count > 0)}
                     style={{ opacity: cooldown ? 0.5 : 1 }}
                 >
                     {cooldown ? 'CHARGING...' : 'PULL!'}

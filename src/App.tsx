@@ -9,6 +9,7 @@ function App() {
   const [roomCode, setRoomCode] = useState('');
   const [isCreator, setIsCreator] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const [showCountdown, setShowCountdown] = useState(false);
   const [gameState, setGameState] = useState<{
     team: 'red' | 'blue' | null;
     characterIds: { red: string; blue: string };
@@ -23,6 +24,7 @@ function App() {
     setRoomCode(code);
     setIsCreator(creator);
     setGameStarted(started);
+    setShowCountdown(false); // No countdown for late joiners
     if (config?.characters) {
       setGameState(prev => ({
         ...prev,
@@ -39,6 +41,7 @@ function App() {
   useEffect(() => {
     socket.on('game_started', () => {
       setGameStarted(true);
+      setShowCountdown(true);
     });
 
     socket.on('room_update', (config) => {
@@ -86,6 +89,7 @@ function App() {
           characterIds={gameState.characterIds}
           initialPlayerCounts={gameState.playerCounts}
           onRestart={handleRestart}
+          showCountdown={showCountdown}
         />
       )}
     </div>

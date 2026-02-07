@@ -89,5 +89,47 @@ export const CHARACTERS: Character[] = [
         name: 'Captain Rex',
         image: '/src/assets/characters/captain_rex.png',
         side: 'light'
+    },
+    {
+        id: 'boba_fett',
+        name: 'Boba Fett',
+        image: '/src/assets/characters/boba_fett.png',
+        side: 'dark'
+    },
+    {
+        id: 'general_grievous',
+        name: 'General Grievous',
+        image: '/src/assets/characters/general_grievous.png',
+        side: 'dark'
+    },
+    {
+        id: 'chewbacca',
+        name: 'Chewbacca',
+        image: '/src/assets/characters/chewbacca.png',
+        side: 'light'
+    },
+    {
+        id: 'commander_cody',
+        name: 'Commander Cody',
+        image: '/src/assets/characters/commander_cody.png',
+        side: 'light'
+    },
+    {
+        id: 'han_solo',
+        name: 'Han Solo',
+        image: '/src/assets/characters/han_solo.png',
+        side: 'light'
+    },
+    {
+        id: 'leia_organa',
+        name: 'Leia Organa',
+        image: '/src/assets/characters/leia_organa.png',
+        side: 'light'
+    },
+    {
+        id: 'qui_gon_jinn',
+        name: 'Qui-Gon Jinn',
+        image: '/src/assets/characters/qui_gon_jinn.png',
+        side: 'light'
     }
 ];
