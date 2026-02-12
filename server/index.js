@@ -14,14 +14,7 @@ const io = new Server(httpServer, {
     }
 });
 
-// rooms[roomCode] = {
-//   score: 0,
-//   creator: socketId,
-//   isStarted: false,
-//   players: [{ id: socketId, name: string }],
-//   teams: { red: [], blue: [] },
-//   characters: { red: 'darth_vader', blue: 'luke_skywalker' }
-// }
+
 let rooms = {};
 
 function generateRoomCode() {
@@ -84,7 +77,7 @@ io.on('connection', (socket) => {
         const room = rooms[roomCode];
         if (!room) return;
 
-        // Remove from existing team if any
+
         room.teams.red = room.teams.red.filter(id => id !== socket.id);
         room.teams.blue = room.teams.blue.filter(id => id !== socket.id);
 
@@ -129,7 +122,7 @@ io.on('connection', (socket) => {
         const room = rooms[roomCode];
         if (!room) return;
 
-        // Verify player is on the team
+
         if (!room.teams[team].includes(socket.id)) return;
 
         const change = team === 'red' ? 5 : -5;
@@ -166,13 +159,11 @@ io.on('connection', (socket) => {
                     }
                 });
 
-                // If creator leaves, we might want to close or assign new creator
-                // For now, if everyone leaves, delete room
+
+
                 const totalPlayers = room.teams.red.length + room.teams.blue.length;
                 if (totalPlayers === 0 && room.creator === socket.id) {
-                    // This is simple cleanup, ideally we'd check if any socket is still in room
-                    // but io.in(roomCode).fetchSockets() is async.
-                    // For now, let's just leave it or use a timeout.
+
                 }
             }
         }

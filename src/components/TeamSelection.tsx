@@ -49,7 +49,7 @@ export default function TeamSelection({ roomCode, isCreator, initialCharacters, 
             <p className="subtitle">Choose Your Side</p>
 
             <div className="team-selection">
-                {/* BLUE SIDE */}
+
                 <div className="team-column">
                     <div className="character-picker">
                         {isCreator ? (
@@ -79,7 +79,7 @@ export default function TeamSelection({ roomCode, isCreator, initialCharacters, 
 
                 <div className="vs-divider">VS</div>
 
-                {/* RED SIDE */}
+
                 <div className="team-column">
                     <div className="character-picker">
                         {isCreator ? (

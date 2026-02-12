@@ -24,7 +24,7 @@ function App() {
     setRoomCode(code);
     setIsCreator(creator);
     setGameStarted(started);
-    setShowCountdown(false); // No countdown for late joiners
+    setShowCountdown(false);
     if (config?.characters) {
       setGameState(prev => ({
         ...prev,
